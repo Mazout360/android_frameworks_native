@@ -56,6 +56,14 @@ ifneq ($(TARGET_BUILD_PDK), true)
 	LOCAL_SRC_FILES += DdmConnection.cpp
 endif
 
+ifeq ($(BOARD_USES_LGE_HDMI_ROTATION),true)
+$(shell mkdir -p $(OUT)/obj/SHARED_LIBRARIES/libnvdispmgr_d_intermediates/)
+$(shell touch $(OUT)/obj/SHARED_LIBRARIES/libnvdispmgr_d_intermediates/export_includes)
+LOCAL_CFLAGS += -DUSE_LGE_HDMI
+LOCAL_SHARED_LIBRARIES += \
+	libnvdispmgr_d
+endif
+
 ifeq ($(TARGET_SOC),exynos5250)
 LOCAL_CFLAGS += -DSAMSUNG_EXYNOS5250
 endif
