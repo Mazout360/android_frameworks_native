@@ -21,6 +21,8 @@
 #include <utils/RefBase.h>
 #include <utils/StrongPointer.h>
 #include <utils/threads.h>
+#include <linux/kd.h>
+#include <linux/vt.h>
 
 namespace android {
 
@@ -47,14 +49,32 @@ public:
 
 private:
     class DisplayEventThread : public Thread {
-        wp<SurfaceFlinger> mFlinger;
-        status_t waitForFbSleep();
+		status_t waitForFbSleep();
         status_t waitForFbWake();
+	protected:
+        wp<SurfaceFlinger> mFlinger;
     public:
         DisplayEventThread(const sp<SurfaceFlinger>& flinger);
         virtual ~DisplayEventThread();
         virtual bool threadLoop();
         status_t initCheck() const;
+    };
+
+	class ConsoleManagerThread : public DisplayEventThread {
+        int consoleFd;
+        int vt_num;
+        int prev_vt_num;
+        vt_mode vm;
+        static void sigHandler(int sig);
+        static pid_t sSignalCatcherPid;
+	public:
+        ConsoleManagerThread(const sp<SurfaceFlinger>& flinger);
+        virtual ~ConsoleManagerThread();
+        virtual bool threadLoop();
+        virtual status_t readyToRun();
+        virtual void requestExit();
+        virtual status_t releaseScreen() const;
+        virtual status_t initCheck() const;
     };
 
     sp<DisplayEventThread>  mDisplayEventThread;
